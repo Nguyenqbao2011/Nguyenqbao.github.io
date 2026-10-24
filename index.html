@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Tung Tung Sahur: Temple Escape (2D 8-Bit)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-wrapper">
+    <!-- Top Header Bar -->
+    <header class="game-header">
+      <div class="logo">
+        <span class="drum-icon">🥁</span>
+        <span class="logo-text">TUNG TUNG SAHUR</span>
+        <span class="subtitle">TEMPLE ESCAPE</span>
+      </div>
+      <div class="header-badges">
+        <button id="btnTouchToggle" class="badge touch-badge">📱 TOUCH: ON</button>
+        <span class="badge silent-badge">🔇 SILENT</span>
+        <span class="badge retro-badge">8-BIT RETRO</span>
+      </div>
+    </header>
+
+    <!-- Canvas Frame Container -->
+    <div class="arcade-cabinet">
+      <canvas id="gameCanvas" width="960" height="540"></canvas>
+      
+      <!-- Scanline / Retro CRT Overlay -->
+      <div class="crt-overlay"></div>
+
+      <!-- Mobile & iPad Virtual Touch Controls Overlay -->
+      <div id="touchControls" class="touch-controls">
+        <!-- Movement Buttons on Left -->
+        <div class="touch-group touch-movement">
+          <button id="btnTouchLeft" class="touch-btn touch-btn-move" aria-label="Move Left">
+            <span class="touch-icon">◀</span>
+          </button>
+          <button id="btnTouchRight" class="touch-btn touch-btn-move" aria-label="Move Right">
+            <span class="touch-icon">▶</span>
+          </button>
+        </div>
+
+        <!-- Action Buttons on Right -->
+        <div class="touch-group touch-actions">
+          <!-- Ability: Above the jump button and slightly on the left -->
+          <button id="btnTouchAbility" class="touch-btn touch-btn-ability" aria-label="Stick Ground Slam Ability (10s Cooldown)">
+            <div class="ability-cd-overlay" id="abilityCdOverlay"></div>
+            <span class="ability-icon">💥</span>
+            <span class="ability-label">SLAM</span>
+            <span id="touchAbilityCdText" class="ability-cd-badge">READY</span>
+          </button>
+
+          <!-- Hit Button: Swing Stick -->
+          <button id="btnTouchHit" class="touch-btn touch-btn-hit" aria-label="Hit / Swing Stick">
+            <span class="touch-icon">🏏</span>
+            <span class="touch-label">HIT</span>
+          </button>
+
+          <!-- Jump Button: On the Right -->
+          <button id="btnTouchJump" class="touch-btn touch-btn-jump" aria-label="Jump">
+            <span class="touch-icon">▲</span>
+            <span class="touch-label">JUMP</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Menu UI Overlays (HTML / CSS atop Canvas) -->
+      
+      <!-- 1. Main Menu Screen -->
+      <div id="mainMenu" class="ui-screen active">
+        <div class="menu-content">
+          <div class="title-emblem">
+            <h1 class="pixel-title">TUNG TUNG SAHUR</h1>
+            <h2 class="pixel-subtitle">TEMPLE ESCAPE</h2>
+            <p class="tagline">Smash Monsters • Break Mystery Crates • Defeat Brainrot Bosses</p>
+          </div>
+
+          <div class="menu-buttons">
+            <button id="btnPlay" class="pixel-btn btn-primary">
+              <span class="btn-icon">▶</span> PLAY GAME
+            </button>
+            <button id="btnHowTo" class="pixel-btn btn-secondary">
+              <span class="btn-icon">📖</span> HOW TO PLAY
+            </button>
+            <button id="btnLeaderboard" class="pixel-btn btn-secondary">
+              <span class="btn-icon">🏆</span> LEADERBOARD
+            </button>
+          </div>
+
+          <div class="quick-controls-hint">
+            <span>[A / D] Move</span> • <span>[SPACE] Jump</span> • <span>[F] Ground Slam (10s)</span> • <span>[E] Hit</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. How To Play Modal Screen -->
+      <div id="howToScreen" class="ui-screen">
+        <div class="modal-card">
+          <h2 class="pixel-heading">HOW TO PLAY & MECHANICS</h2>
+          
+          <div class="guide-grid">
+            <div class="guide-box">
+              <div class="guide-title">🕹️ BASIC CONTROLS</div>
+              <ul>
+                <li><strong>A / D or ◄ / ►:</strong> Run Left & Right</li>
+                <li><strong>SPACE or W:</strong> Jump (Hold for higher jump)</li>
+                <li><strong>E or K:</strong> Swing stick to break crates</li>
+                <li><strong>ESC or P:</strong> Pause / Return to Menu</li>
+              </ul>
+            </div>
+
+            <div class="guide-box highlight">
+              <div class="guide-title">💥 COMBAT & ABILITIES</div>
+              <ul>
+                <li><strong>HEAD STOMP:</strong> Jump on top of Ghost & Spider heads to squash them instantly and bounce!</li>
+                <li><strong>STICK GROUND SLAM [F or J]:</strong> Slam your stick into the ground for a MASSIVE AoE shockwave that obliterates nearby enemies! (10s Cooldown)</li>
+              </ul>
+            </div>
+
+            <div class="guide-box">
+              <div class="guide-title">🗝️ CRATES & ESCAPE</div>
+              <ul>
+                <li>Smash wooden crates to find the <strong>Golden Temple Key</strong>.</li>
+                <li>Once found, bring the Key to the glowing <strong>Exit Portal</strong> to clear the level!</li>
+                <li>Each level gets harder with faster monsters and trickier gaps.</li>
+              </ul>
+            </div>
+
+            <div class="guide-box highlight-boss">
+              <div class="guide-title">👑 BRAINROT BOSSES & HEALING</div>
+              <ul>
+                <li><strong>Every 3 Levels:</strong> Face Brainrot Bosses with <em>Undertale</em> bullet-hell soundwaves and <em>Cuphead</em> rush attacks!</li>
+                <li><strong>★ REWARD:</strong> After defeating the boss every 3 levels, you <strong>gain back 3 Health</strong>!</li>
+              </ul>
+            </div>
+          </div>
+
+          <button id="btnBackFromHowTo" class="pixel-btn btn-close">BACK TO MENU</button>
+        </div>
+      </div>
+
+      <!-- 3. Leaderboard Modal Screen -->
+      <div id="leaderboardScreen" class="ui-screen">
+        <div class="modal-card">
+          <h2 class="pixel-heading">🏆 TEMPLE ESCAPE LEADERBOARD</h2>
+          <p class="table-subtitle">Fastest Escapes & Highest Levels Cleared</p>
+
+          <div class="table-container">
+            <table class="pixel-table">
+              <thead>
+                <tr>
+                  <th>RANK</th>
+                  <th>HERO</th>
+                  <th>LEVELS CLEARED</th>
+                  <th>ESCAPE TIME</th>
+                  <th>DATE</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardBody">
+                <!-- Populated via game.js -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="modal-footer">
+            <button id="btnClearLeaderboard" class="pixel-btn btn-danger">RESET RECORDS</button>
+            <button id="btnBackFromLeaderboard" class="pixel-btn btn-close">BACK TO MENU</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Victory Screen Overlay -->
+      <div id="victoryScreen" class="ui-screen">
+        <div class="modal-card victory-card">
+          <div class="crown-icon">👑</div>
+          <h2 class="pixel-heading gold-text">TEMPLE ESCAPED!</h2>
+          <p class="vic-tagline">Tung Tung Sahur defeated all Brainrot Bosses!</p>
+
+          <div class="stat-badge">
+            <span class="stat-label">Final Escape Time:</span>
+            <span id="victoryTime" class="stat-value">02:14.50</span>
+          </div>
+
+          <div class="name-entry-form">
+            <label for="playerNameInput">ENTER YOUR NAME FOR THE LEADERBOARD:</label>
+            <input type="text" id="playerNameInput" maxlength="14" placeholder="SahurHero" value="SahurHero">
+            <button id="btnSaveScore" class="pixel-btn btn-primary">SAVE RECORD</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Game Over Screen Overlay -->
+      <div id="gameOverScreen" class="ui-screen">
+        <div class="modal-card gameover-card">
+          <div class="skull-icon">💀</div>
+          <h2 class="pixel-heading red-text">TEMPLE SQUASHED!</h2>
+          <p id="gameOverSummary" class="go-summary">Fell at Level 1 • Time: 00:45.20</p>
+          <p class="hint-text">Tip: Remember to jump on enemy heads or use your 10s Stick Slam AoE!</p>
+
+          <div class="go-buttons">
+            <button id="btnRetry" class="pixel-btn btn-primary">RETRY RUN</button>
+            <button id="btnMenuFromGameOver" class="pixel-btn btn-secondary">MAIN MENU</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Controls & Info Bar -->
+    <footer class="game-footer">
+      <div class="footer-tip">
+        <strong>Pro-Tip:</strong> Press <strong>[F]</strong> or <strong>[J]</strong> (or tap on-screen <strong>[💥 SLAM]</strong>) to trigger the 10-second Stick Ground Slam shockwave!
+      </div>
+    </footer>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
